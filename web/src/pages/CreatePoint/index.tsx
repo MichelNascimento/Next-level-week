@@ -1,4 +1,4 @@
-import React, { useEffect, useState, ChangeEvent } from 'react';
+import React, { useEffect, useState, ChangeEvent, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
 import { Map, TileLayer, Marker } from 'react-leaflet';
@@ -33,6 +33,12 @@ const CreatePoint = () => {
     const [selectedCity, setSelectedCity] = useState('0');
     const [selectedPosition, setSelectedPosition] = useState<[number, number]>([0, 0]);
     const [initialPosition, setInicialPosition] = useState<[number, number]>([0, 0]);
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        whatsapp: ''
+    })
+    const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
     // buscando os itens da api.
     useEffect(() => {
@@ -92,6 +98,28 @@ const CreatePoint = () => {
         ])
     }
 
+    function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
+        const { name, value } = event.target;
+
+        setFormData({ ...formData, [name]: value })
+    }
+
+    function handleSelectItem(id: number) {
+        const alreadySelected = selectedItems.findIndex(item => item === id);
+
+        if(alreadySelected >= 0) {
+            const filteredItems = selectedItems.filter(item => item !== id);
+
+            setSelectedItems(filteredItems)
+        } else {
+            setSelectedItems([...selectedItems, id]);
+        }
+    }
+
+    function handleSubmit(event: FormEvent) {
+        event.preventDefault();
+    }
+
     return (
         <div id="page-create-point">
             <header>
@@ -101,7 +129,7 @@ const CreatePoint = () => {
                     Voltar para HOme
               </Link>
             </header>
-            <form>
+            <form onSubmit={handleSubmit}>
                 <h1>Cadastro do <br /> ponto de coleta</h1>
 
                 <fieldset>
@@ -115,6 +143,7 @@ const CreatePoint = () => {
                             type="text"
                             name="name"
                             id="name"
+                            onChange={handleInputChange}
                         />
                     </div>
                     <div className="field-group">
@@ -124,6 +153,7 @@ const CreatePoint = () => {
                                 type="email"
                                 name="email"
                                 id="email"
+                                onChange={handleInputChange}
                             />
                         </div>
                         <div className="field">
@@ -132,6 +162,7 @@ const CreatePoint = () => {
                                 type="text"
                                 name="whatsapp"
                                 id="whatsapp"
+                                onChange={handleInputChange}
                             />
                         </div>
                     </div>
@@ -194,7 +225,11 @@ const CreatePoint = () => {
 
                     <ul className="items-grid">
                         {items.map(item => (
-                            <li key={item.id}>
+                            <li
+                                key={item.id}
+                                onClick={() => handleSelectItem(item.id)}
+                                className={selectedItems.includes(item.id) ? 'selected' : ''}
+                            >
                                 <img src={item.image_url} alt={item.title} />
                                 <span>{item.title}</span>
                             </li>
